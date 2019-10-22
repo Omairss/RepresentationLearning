@@ -1,5 +1,8 @@
 data/
+<<<<<<< HEAD
 intermediate_pkl/
+=======
+>>>>>>> 5b063a8dfec71b27b96450293e085c66681bf924
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
