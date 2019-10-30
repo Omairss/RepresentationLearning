@@ -118,3 +118,31 @@ class InnerProductDecoder(Layer):
         x = tf.reshape(x, [-1])
         outputs = self.act(x)
         return outputs
+
+
+class FullyConnectedDecoder(Layer):
+    """Decoder model layer for feature prediction"""
+    def __init__(self, input_dim, output_dim, adj, features_nonzero,
+                 inputs, dropout=0., act=tf.nn.sigmoid, **kwargs):
+        
+        super(FullyConnectedDecoder, self).__init__(**kwargs)
+        with tf.variable_scope(self.name + '_vars'):
+            self.vars['weights'] = weight_variable_glorot(input_dim, output_dim, name="weights")
+        self.dropout = dropout
+        self.adj = adj
+        self.inputs = inputs
+        self.act = act
+        self.issparse = False
+        self.features_nonzero = features_nonzero
+
+
+    def _call(self, inputs):
+        
+        x = inputs
+        #x = dropout_sparse(x, 1-self.dropout, self.features_nonzero)
+        x = tf.matmul(x, self.vars['weights'])
+        x = tf.sparse_tensor_dense_matmul(self.inputs, tf.transpose(x))
+        x = tf.reshape(x, [-1])
+        outputs = self.act(x)
+
+        return outputs

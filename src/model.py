@@ -1,4 +1,4 @@
-from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder
+from layers import GraphConvolution, GraphConvolutionSparse, InnerProductDecoder, FullyConnectedDecoder
 import tensorflow as tf
 
 flags = tf.app.flags
@@ -95,15 +95,15 @@ class GCNModelVAE(Model):
                                               dropout=self.dropout,
                                               logging=self.logging)(self.inputs)
 
-        self.z_mean = GraphConvolution(input_dim=FLAGS.hidden1,
-                                       output_dim=FLAGS.hidden2,
+        self.z_mean = GraphConvolution(input_dim=FLAGS.hidden1, #32
+                                       output_dim=FLAGS.hidden2, #16
                                        adj=self.adj,
                                        act=lambda x: x,
                                        dropout=self.dropout,
                                        logging=self.logging)(self.hidden1)
 
-        self.z_log_std = GraphConvolution(input_dim=FLAGS.hidden1,
-                                          output_dim=FLAGS.hidden2,
+        self.z_log_std = GraphConvolution(input_dim=FLAGS.hidden1, #32
+                                          output_dim=FLAGS.hidden2, #16
                                           adj=self.adj,
                                           act=lambda x: x,
                                           dropout=self.dropout,
@@ -111,6 +111,20 @@ class GCNModelVAE(Model):
 
         self.z = self.z_mean + tf.random_normal([self.n_samples, FLAGS.hidden2]) * tf.exp(self.z_log_std)
 
-        self.reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
-                                      act=lambda x: x,
-                                      logging=self.logging)(self.z)
+        #self.reconstructions = InnerProductDecoder(input_dim=FLAGS.hidden2,
+        #                              act=lambda x: x,
+        #                              logging=self.logging)(self.z)
+
+        #self.reconstructions = bullshit
+
+        print(self.inputs)
+
+        self.reconstructions = FullyConnectedDecoder(input_dim=FLAGS.hidden2,
+                                                   output_dim=self.input_dim,
+                                                   adj=self.adj,
+                                                   features_nonzero=self.features_nonzero,
+                                                   #act=lambda x: x,
+                                                   inputs = self.inputs,
+                                                   dropout=self.dropout,
+                                                   logging=self.logging)(self.z)
+
