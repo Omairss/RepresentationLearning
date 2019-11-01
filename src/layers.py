@@ -127,7 +127,7 @@ class FullyConnectedDecoder(Layer):
         
         super(FullyConnectedDecoder, self).__init__(**kwargs)
         with tf.variable_scope(self.name + '_vars'):
-            self.vars['weights'] = weight_variable_glorot(input_dim, output_dim, name="weights")
+            self.vars['weights2'] = weight_variable_glorot(input_dim, output_dim, name="weights2")
         self.dropout = dropout
         self.adj = adj
         self.inputs = inputs
@@ -138,11 +138,25 @@ class FullyConnectedDecoder(Layer):
 
     def _call(self, inputs):
         
+        '''
         x = inputs
         #x = dropout_sparse(x, 1-self.dropout, self.features_nonzero)
-        x = tf.matmul(x, self.vars['weights'])
-        x = tf.sparse_tensor_dense_matmul(self.inputs, tf.transpose(x))
+        x = tf.matmul(x, self.vars['weights']) #3327x16 . 16x3703
+        x = tf.matmul(tf.transpose(x), tf.sparse_tensor_to_dense(self.inputs))  #3703X3327.3327x16
         x = tf.reshape(x, [-1])
+        outputs = self.act(x)
+        '''
+        '''
+        x = inputs
+        x = tf.matmul(tf.transpose(tf.sparse_tensor_to_dense(self.inputs)), x) #3703X3327.3327x16
+        x = tf.matmul(x, self.vars['weights2']) #3703x16.16x3327
+        x = tf.reshape(tf.transpose(x), [-1])
+        outputs = self.act(x)
+        '''
+
+        x = inputs
+        x = tf.matmul(x, self.vars['weights2']) #3703x16.16x3327
+        x = tf.reshape(tf.transpose(x), [-1])
         outputs = self.act(x)
 
         return outputs

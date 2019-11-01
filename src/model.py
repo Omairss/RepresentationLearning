@@ -123,7 +123,7 @@ class GCNModelVAE(Model):
                                                    output_dim=self.input_dim,
                                                    adj=self.adj,
                                                    features_nonzero=self.features_nonzero,
-                                                   #act=lambda x: x,
+                                                   act=lambda x: x,
                                                    inputs = self.inputs,
                                                    dropout=self.dropout,
                                                    logging=self.logging)(self.z)
